@@ -33,14 +33,14 @@ router.post('/users', async (req, res) => {
 // find user by email and password
 router.post('/users/login', async (req, res) => {
   try {
-    console.log('logging in', req.body.email, req.body.password);
+    //console.log('logging in', req.body.email, req.body.password);
     const user = await User.findByCredentials(
       req.body.email,
       req.body.password
     );
 
     const token = await user.generateAuthToken();
-    console.log('logging in 2', token);
+    //console.log('logging in 2', token);
     res.send({
       user,
       token
