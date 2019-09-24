@@ -1,39 +1,13 @@
 //notice names do NOT match
 const request = require('supertest');
-const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
+
 const app = require('../src/app');
 //loads model
 const User = require('../src/models/user');
+const { userOne, userOneId, setUpDatabase } = require('./fixtures/db');
 
-// dummy data to test with
-const userOneId = new mongoose.Types.ObjectId();
-const userOne = {
-  _id: userOneId,
-  name: 'Mike',
-  email: 'mike@example.com',
-  password: '56what!!',
-  tokens: [
-    {
-      token: jwt.sign(
-        {
-          _id: userOneId
-        },
-        process.env.JWT_SECRET
-      )
-    }
-  ]
-};
-
-// jest supplies functions to run before the test so you can do things
-// like wipe the database before running the test (live cycle/ setup-teardown)
-beforeEach(async () => {
-  //console.log('before each loaded');
-  // this will delete all records
-  await User.deleteMany();
-  //save our dummy data to the database for testing
-  await new User(userOne).save();
-});
+// wipes data base
+beforeEach(setUpDatabase);
 
 // also
 // afterEach(() => {
@@ -128,4 +102,35 @@ test('Should not delete account for unauthenticated user', async () => {
     .delete('/users/me')
     .send()
     .expect(401);
+});
+
+test('Should upload avatar image', async () => {
+  await request(app)
+    .post('/users/me/avatar')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    //supertest method to upload the image
+    .attach('avatar', 'tests/fixtures/profile-pic.jpg')
+    .expect(200);
+  //check that it is saving binary data(image)
+  const user = await User.findById(userOneId);
+  expect(user.avatar).toEqual(expect.any(Buffer));
+});
+
+test('Should update valid user felids', async () => {
+  await request(app)
+    .patch('/users/me')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .send({ name: 'Bob' })
+    .expect(200);
+
+  const user = await User.findById(userOneId);
+  expect(user.name).toBe('Bob'); //can also use toEqual
+});
+
+test('Should not update invalid user felids', async () => {
+  await request(app)
+    .patch('/users/me')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .send({ date: 'B1234' })
+    .expect(400);
 });

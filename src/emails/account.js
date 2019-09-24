@@ -10,9 +10,9 @@ const sendWelcomeEmail = (email, name) => {
       subject: 'Thank you for signing up!',
       text: `Welcome to the Task app ${name}, thank you for signing up!`
     })
-    .catch(err => {
-      console.log(err);
-    });
+  // .catch(err => {
+  //   console.log(err);
+  // });
 };
 
 const sendCancellationEmail = (email, name) => {
@@ -23,9 +23,9 @@ const sendCancellationEmail = (email, name) => {
       subject: 'Sorry that you canceled!',
       text: `Sorry you canceled the Task app ${name}, have a great day!!`
     })
-    .catch(err => {
-      console.log(err);
-    });
+  // .catch(err => {
+  //   console.log(err);
+  // });
 }
 
 module.exports = {
